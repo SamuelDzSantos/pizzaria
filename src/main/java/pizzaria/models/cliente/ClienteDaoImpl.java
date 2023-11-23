@@ -25,12 +25,24 @@ public class ClienteDaoImpl implements ClienteDao {
     private final String select = "SELECT tb_cliente.id_cliente, nome_cliente, sobrenome_cliente, telefone_cliente, endereco_cliente FROM tb_cliente"
             + " LEFT JOIN tb_pedido ON (tb_pedido.id_cliente = tb_cliente.id_cliente)"
             + " LEFT JOIN tb_idstatus ON (tb_idstatus.id = tb_pedido.id_status_pedido)";
-    private final String selectBusca = " WHERE (nome_cliente LIKE '% ? %' OR sobrenome_cliente LIKE '% ? %' OR telefone_cliente LIKE '%  ?  %' OR endereco_cliente LIKE '%  ? %'";
+    private final String selectBusca = " WHERE (nome_cliente LIKE  ?  OR sobrenome_cliente LIKE  ?  OR " +
+            "telefone_cliente LIKE  ?   OR endereco_cliente LIKE  ?  ) ORDER BY tb_cliente.id_cliente DESC";
     private final String selectPorId = "SELECT * FROM tb_cliente WHERE tb_cliente.id_cliente = ?";
+
+    private final List<ClienteObserver> observers = new ArrayList<>();
+
     private Connection con;
 
     public ClienteDaoImpl(Connection con) {
         this.con = con;
+    }
+
+    public void subscribe(ClienteObserver observer) {
+        observers.add(observer);
+    }
+
+    public void unsubscribe(ClienteObserver observer) {
+        observers.remove(observer);
     }
 
     @Override
@@ -41,6 +53,9 @@ public class ClienteDaoImpl implements ClienteDao {
             st.setString(3, c.getTelefone());
             st.setString(4, c.getEndereco());
             int rowsAffected = st.executeUpdate();
+            for (ClienteObserver observer : observers) {
+                observer.addCliente(c);
+            }
             if (rowsAffected == 1) {
                 System.out.println("Inserted value! " + rowsAffected + "rows affected!");
             }
@@ -69,12 +84,17 @@ public class ClienteDaoImpl implements ClienteDao {
 
     @Override
     public void remover(int id) {
-
+        System.out.println(id);
         try (PreparedStatement st = con.prepareStatement(deletar)) {
-            st.setString(1, Integer.toString(id));
+            st.setInt(1, id);
             int rowsAffected = st.executeUpdate();
             if (rowsAffected == 1) {
                 System.out.println("Deleted value! " + rowsAffected + "rows affected!");
+            }
+            List<Cliente> clientes = this.buscarTodos();
+            for (ClienteObserver observer : this.observers) {
+                observer.updateClientes(clientes);
+
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,24 +117,31 @@ public class ClienteDaoImpl implements ClienteDao {
         }
     }
 
+    // heh3
     @Override
     public List<Cliente> buscarTodos(String busca) {
-        String sql = select;
-        if (!busca.isEmpty())
-            sql += selectBusca;
-        sql = sql + " ORDER BY tb_cliente.id_cliente DESC";
+        String sql = select + selectBusca;
         List<Cliente> lista = new ArrayList<Cliente>();
-        try (PreparedStatement st = con.prepareStatement(sql); ResultSet rs = st.executeQuery();) {
-            while (rs.next()) {
-                Cliente c = new Cliente();
-                c.setId(Integer.parseInt(rs.getString("id_cliente")));
-                c.setNome(rs.getString("nome_cliente"));
-                c.setSobrenome(rs.getString("sobrenome_cliente"));
-                c.setTelefone(rs.getString("telefone_cliente"));
-                c.setEndereco(rs.getString("endereco_cliente"));
-                lista.add(c);
+        try (PreparedStatement st = con.prepareStatement(sql)) {
+            st.setString(1, "%" + busca + "%");
+            st.setString(2, "%" + busca + "%");
+            st.setString(3, "%" + busca + "%");
+            st.setString(4, "%" + busca + "%");
+            try (ResultSet rs = st.executeQuery()) {
+                while (rs.next()) {
+                    Cliente c = new Cliente();
+                    c.setId(Integer.parseInt(rs.getString("id_cliente")));
+                    c.setNome(rs.getString("nome_cliente"));
+                    c.setSobrenome(rs.getString("sobrenome_cliente"));
+                    c.setTelefone(rs.getString("telefone_cliente"));
+                    c.setEndereco(rs.getString("endereco_cliente"));
+                    lista.add(c);
+                }
+                for (ClienteObserver observer : observers) {
+                    observer.updateClientes(lista);
+                }
+                return lista;
             }
-            return lista;
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<Cliente>();
@@ -133,7 +160,6 @@ public class ClienteDaoImpl implements ClienteDao {
                 c.setTelefone(rs.getString("telefone_cliente"));
                 c.setEndereco(rs.getString("endereco_cliente"));
                 lista.add(c);
-
             }
             return lista;
         } catch (Exception e) {
@@ -154,7 +180,9 @@ public class ClienteDaoImpl implements ClienteDao {
                 c.setTelefone(rs.getString("telefone_cliente"));
                 c.setEndereco(rs.getString("endereco_cliente"));
                 lista.add(c);
-
+            }
+            for (ClienteObserver observer : observers) {
+                observer.updateClientes(lista);
             }
             return lista;
         } catch (Exception e) {
@@ -165,17 +193,20 @@ public class ClienteDaoImpl implements ClienteDao {
 
     @Override
     public Optional<Cliente> buscarPorId(int id) {
-        try (PreparedStatement st = con.prepareStatement(selectPorId); ResultSet rs = st.executeQuery()) {
-            if (rs.next()) {
-                Cliente c = new Cliente();
-                c.setId(Integer.parseInt(rs.getString("id_cliente")));
-                c.setNome(rs.getString("nome_cliente"));
-                c.setSobrenome(rs.getString("sobrenome_cliente"));
-                c.setTelefone(rs.getString("telefone_cliente"));
-                c.setEndereco(rs.getString("endereco_cliente"));
+        try (PreparedStatement st = con.prepareStatement(selectPorId);) {
+            st.setInt(1, id);
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    Cliente c = new Cliente();
+                    c.setId(Integer.parseInt(rs.getString("id_cliente")));
+                    c.setNome(rs.getString("nome_cliente"));
+                    c.setSobrenome(rs.getString("sobrenome_cliente"));
+                    c.setTelefone(rs.getString("telefone_cliente"));
+                    c.setEndereco(rs.getString("endereco_cliente"));
+                    return Optional.of(c);
+                }
+                return Optional.empty();
             }
-            return Optional.empty();
-
         } catch (Exception e) {
             e.printStackTrace();
             return Optional.empty();

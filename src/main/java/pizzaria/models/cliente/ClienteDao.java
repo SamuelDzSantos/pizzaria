@@ -30,4 +30,8 @@ public interface ClienteDao {
 
     public Optional<Cliente> buscarPorId(int id);
 
+    public void subscribe(ClienteObserver observer);
+
+    public void unsubscribe(ClienteObserver observer);
+
 }
