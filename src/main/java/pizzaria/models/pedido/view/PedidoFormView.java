@@ -5,6 +5,8 @@
 package pizzaria.models.pedido.view;
 
 import pizzaria.models.cliente.Cliente;
+import pizzaria.models.valores.ValorController;
+import pizzaria.models.valores.ValorDAO;
 
 /**
  *
@@ -13,13 +15,18 @@ import pizzaria.models.cliente.Cliente;
 public class PedidoFormView extends javax.swing.JFrame {
 
     private final Cliente cliente;
+    private final ValorController valorController;
+    private final ValorDAO valorDAO;
 
     /**
      * Creates new form PedidoForm
      */
-    public PedidoFormView(Cliente cliente) {
+    public PedidoFormView(Cliente cliente,ValorController valorController,ValorDAO valorDAO) {
         this.cliente = cliente;
+        this.valorController = valorController;
+        this.valorDAO= valorDAO;
         initComponents();
+        initComboBox();
     }
 
     /**
@@ -29,6 +36,11 @@ public class PedidoFormView extends javax.swing.JFrame {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated
     // Code">//GEN-BEGIN:initComponents
+    
+    private void initComboBox(){
+        
+    }
+    
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();

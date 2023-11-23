@@ -4,10 +4,12 @@
  */
 package pizzaria.models.sabor;
 
+import java.util.List;
+
 /**
  *
  * @author chris
  */
 public interface SaborObserver {
-    
+    public void updateSabor(List<Sabor> sabores);
 }

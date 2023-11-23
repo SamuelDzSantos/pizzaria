@@ -6,6 +6,9 @@ import pizzaria.main.MainView;
 import pizzaria.models.cliente.ClienteController;
 import pizzaria.models.cliente.ClienteDao;
 import pizzaria.models.cliente.ClienteDaoImpl;
+import pizzaria.models.sabor.SaborController;
+import pizzaria.models.sabor.SaborDao;
+import pizzaria.models.sabor.SaborDaoImpl;
 import pizzaria.models.valores.ValorController;
 import pizzaria.models.valores.ValorDAO;
 import pizzaria.models.valores.ValorDAOImpl;
@@ -18,6 +21,8 @@ public class App {
         ClienteController clienteController = new ClienteController();
         ValorController valorController = new ValorController();
         ValorDAO valorDAO = new ValorDAOImpl(con);
-        new MainView(clienteDao, clienteController, valorController, valorDAO);
+        SaborDao saborDao = new SaborDaoImpl(con);
+        SaborController saborController = new SaborController();
+        new MainView(clienteDao, clienteController, valorController, valorDAO,saborController,saborDao);
     }
 }

@@ -8,15 +8,21 @@ import javax.swing.JTable;
 import pizzaria.main.MainView;
 import pizzaria.models.cliente.view.ClienteFormView;
 import pizzaria.models.pedido.view.PedidoFormView;
+import pizzaria.models.valores.ValorController;
+import pizzaria.models.valores.ValorDAO;
 
 public class ClienteController {
 
     private MainView mainView;
     private ClienteDao clienteDao;
+    private ValorController valorController;
+    private ValorDAO valorDAO;
 
-    public void initController(MainView mainView, ClienteDao clienteDao) {
+    public void initController(MainView mainView, ClienteDao clienteDao,ValorController valorController,ValorDAO valorDAO) {
         this.mainView = mainView;
         this.clienteDao = clienteDao;
+        this.valorController= valorController;
+        this.valorDAO = valorDAO;
     }
 
     public ClienteController() {
@@ -64,7 +70,7 @@ public class ClienteController {
         int id = Integer.parseInt(tabela.getValueAt(rowIndex, 0).toString());
         Optional<Cliente> cliente = this.clienteDao.buscarPorId(id);
         if (cliente.isPresent()) {
-            PedidoFormView telaPedido = new PedidoFormView(cliente.get());
+            PedidoFormView telaPedido = new PedidoFormView(cliente.get(),this.valorController,this.valorDAO);
             telaPedido.setVisible(true);
         }
     }

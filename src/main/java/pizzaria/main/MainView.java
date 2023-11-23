@@ -5,9 +5,9 @@
 package pizzaria.main;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
+import javax.swing.JRadioButton;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -18,6 +18,10 @@ import pizzaria.models.cliente.ClienteController;
 import pizzaria.models.cliente.ClienteDao;
 import pizzaria.models.cliente.ClienteObserver;
 import pizzaria.models.cliente.view.ClienteFormView;
+import pizzaria.models.sabor.Sabor;
+import pizzaria.models.sabor.SaborController;
+import pizzaria.models.sabor.SaborDao;
+import pizzaria.models.sabor.SaborObserver;
 import pizzaria.models.valores.Valor;
 import pizzaria.models.valores.ValorController;
 import pizzaria.models.valores.ValorDAO;
@@ -27,31 +31,40 @@ import pizzaria.models.valores.ValorObserver;
  *
  * @author chris
  */
-public class MainView extends javax.swing.JFrame implements ClienteObserver, ValorObserver {
+public class MainView extends javax.swing.JFrame implements ClienteObserver, ValorObserver , SaborObserver{
 
     private DefaultTableModel model;
     private final ClienteDao clienteDao;
     private final ClienteController clienteController;
     private final ValorController valorController;
     private final ValorDAO valorDAO;
+    private final SaborDao saborDao;
+    private final SaborController saborController;
 
     /**
      * Creates new form Main
      */
     public MainView(ClienteDao clienteDao, ClienteController clienteController, ValorController valorController,
-            ValorDAO valorDAO) {
+            ValorDAO valorDAO,SaborController saborController,SaborDao saborDao) {
         this.clienteController = clienteController;
         this.valorController = valorController;
+        this.saborController = saborController;
         this.valorDAO = valorDAO;
-        this.setVisible(true);
+        this.saborDao = saborDao;
         this.clienteDao = clienteDao;
-        this.clienteDao.subscribe(this);
-        this.clienteController.initController(this, clienteDao);
+        this.setVisible(true);
+        
+        this.clienteController.initController(this, clienteDao,this.valorController,this.valorDAO);
         this.valorController.initValorController(this.valorDAO);
+        this.saborController.initController(this.saborDao);
         this.model = new DefaultTableModel();
         this.initTableModel();
         initComponents();
+        this.clienteDao.subscribe(this);
+        this.saborDao.subscribe(this);
         this.clienteDao.buscarTodos();
+        this.saborDao.buscarTodos();
+
     }
 
     /**
@@ -567,11 +580,21 @@ public class MainView extends javax.swing.JFrame implements ClienteObserver, Val
 
     }// GEN-LAST:event_Status1ActionPerformed
 
+    // hehe123
     private void btBuscarSaboresActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btBuscarSaboresActionPerformed
+        String texto = campo_busca_sabores.getText();
+        this.saborController.buscarSabor(texto);
+        
     }// GEN-LAST:event_btBuscarSaboresActionPerformed
 
     private void btExcluirCliente1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btExcluirCliente1ActionPerformed
-
+        int[] indexRows = this.tabelaSabores.getSelectedRows();
+        List<Integer> ids = new ArrayList<>();
+        for(int row : indexRows){
+            int id = Integer.parseInt(this.tabelaSabores.getValueAt(row, 0).toString());
+            ids.add(id);
+        }        
+        this.saborController.removerSabor(ids);
     }// GEN-LAST:event_btExcluirCliente1ActionPerformed
 
     private void tfInserirActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tfInserirActionPerformed
@@ -579,8 +602,27 @@ public class MainView extends javax.swing.JFrame implements ClienteObserver, Val
     }// GEN-LAST:event_tfInserirActionPerformed
 
     private void btSalvarSaborActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btSalvarSaborActionPerformed
-
+        String texto = tfInserir.getText();
+        JRadioButton radio = getActiveRadioButton();
+        System.out.println(radio.getText());
+        if(texto.isEmpty() || radio == null){
+            return;
+        }
+        this.saborController.salvarSabor(texto,radio.getText());
     }// GEN-LAST:event_btSalvarSaborActionPerformed
+
+    private JRadioButton getActiveRadioButton(){
+        if(this.rbSimples.isSelected()){
+            return this.rbSimples;
+        }
+        if(this.rbEspecial.isSelected()){
+            return this.rbEspecial;
+        }
+        if(this.rbPremium.isSelected()){
+            return this.rbPremium;
+        }
+        return null;
+    }
 
     private void rbSimplesActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_rbSimplesActionPerformed
         // TODO add your handling code here:
@@ -726,5 +768,16 @@ public class MainView extends javax.swing.JFrame implements ClienteObserver, Val
         this.tfEspecial.setText(valores.get(2).getPreco().toString());
         this.tfPremium.setText(valores.get(3).getPreco().toString());
         this.tfSimples.setText(valores.get(1).getPreco().toString());
+    }
+
+    @Override
+    public void updateSabor(List<Sabor> sabores) {
+        System.out.println("oi");
+        DefaultTableModel model = (DefaultTableModel) this.tabelaSabores.getModel();
+        model.setRowCount(0);
+        for(Sabor sabor : sabores){
+            model.addRow(
+                new Object[] { sabor.getId(), sabor.getNome(), sabor.getNomeTipo()});
+}
     }
 }

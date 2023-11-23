@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package pizzaria.models.cliente;
 
 import java.sql.Connection;
@@ -13,10 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Author: Eduardo e Christian
- * Created: 21/06/2023
- */
+
 public class ClienteDaoImpl implements ClienteDao {
 
     private final String inserir = "INSERT INTO tb_cliente (nome_cliente, sobrenome_cliente, telefone_cliente, endereco_cliente) VALUES (?, ?, ?, ?)";

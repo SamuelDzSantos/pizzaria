@@ -1,12 +1,4 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-/**
- * Author:  Samuel e Christian
- * Created: 15/11/2023
- */
+
 CREATE DATABASE db_pizza;
 CREATE TABLE tb_cliente (
   id_cliente SERIAL NOT NULL,
