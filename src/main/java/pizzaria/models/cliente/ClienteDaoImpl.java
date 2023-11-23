@@ -8,6 +8,7 @@ package pizzaria.models.cliente;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,17 +48,23 @@ public class ClienteDaoImpl implements ClienteDao {
 
     @Override
     public void inserir(Cliente c) {
-        try (PreparedStatement st = con.prepareStatement(inserir)) {
+        try (PreparedStatement st = con.prepareStatement(inserir, Statement.RETURN_GENERATED_KEYS)) {
             st.setString(1, c.getNome());
             st.setString(2, c.getSobrenome());
             st.setString(3, c.getTelefone());
             st.setString(4, c.getEndereco());
             int rowsAffected = st.executeUpdate();
-            for (ClienteObserver observer : observers) {
-                observer.addCliente(c);
-            }
-            if (rowsAffected == 1) {
-                System.out.println("Inserted value! " + rowsAffected + "rows affected!");
+            try (ResultSet generatedKeys = st.getGeneratedKeys()) {
+
+                for (ClienteObserver observer : observers) {
+                    if (generatedKeys.next()) {
+                        c.setId(generatedKeys.getInt(1));
+                    }
+                    observer.addCliente(c);
+                }
+                if (rowsAffected == 1) {
+                    System.out.println("Inserted value! " + rowsAffected + "rows affected!");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -72,10 +79,14 @@ public class ClienteDaoImpl implements ClienteDao {
             st.setString(2, c.getSobrenome());
             st.setString(3, c.getTelefone());
             st.setString(4, c.getEndereco());
-            st.setString(5, Integer.toString(c.getId()));
+            st.setInt(5, c.getId());
             int rowsAffected = st.executeUpdate();
             if (rowsAffected == 1) {
                 System.out.println("Updated value! " + rowsAffected + "rows affected!");
+            }
+            List<Cliente> clientes = this.buscarTodos();
+            for (ClienteObserver observer : observers) {
+                observer.updateClientes(clientes);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -106,7 +117,7 @@ public class ClienteDaoImpl implements ClienteDao {
         try (PreparedStatement st = con.prepareStatement(deletar)) {
             int rowsAffected = 0;
             for (Integer id : ids) {
-                st.setString(1, Integer.toString(id));
+                st.setInt(1, id);
                 rowsAffected += st.executeUpdate();
             }
             if (rowsAffected >= 1) {
@@ -114,6 +125,10 @@ public class ClienteDaoImpl implements ClienteDao {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        List<Cliente> clientes = this.buscarTodos();
+        for (ClienteObserver observer : this.observers) {
+            observer.updateClientes(clientes);
         }
     }
 

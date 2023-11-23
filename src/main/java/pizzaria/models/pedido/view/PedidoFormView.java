@@ -4,16 +4,21 @@
  */
 package pizzaria.models.pedido.view;
 
+import pizzaria.models.cliente.Cliente;
+
 /**
  *
  * @author chris
  */
 public class PedidoFormView extends javax.swing.JFrame {
 
+    private final Cliente cliente;
+
     /**
      * Creates new form PedidoForm
      */
-    public PedidoFormView() {
+    public PedidoFormView(Cliente cliente) {
+        this.cliente = cliente;
         initComponents();
     }
 
@@ -354,11 +359,11 @@ public class PedidoFormView extends javax.swing.JFrame {
         // </editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new PedidoFormView().setVisible(true);
-            }
-        });
+        // java.awt.EventQueue.invokeLater(new Runnable() {
+        // public void run() {
+        // new PedidoFormView().setVisible(true);
+        // }
+        // });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

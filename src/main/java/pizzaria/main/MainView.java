@@ -4,9 +4,10 @@
  */
 package pizzaria.main;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -17,27 +18,36 @@ import pizzaria.models.cliente.ClienteController;
 import pizzaria.models.cliente.ClienteDao;
 import pizzaria.models.cliente.ClienteObserver;
 import pizzaria.models.cliente.view.ClienteFormView;
-import pizzaria.models.pedido.view.PedidoFormView;
+import pizzaria.models.valores.Valor;
+import pizzaria.models.valores.ValorController;
+import pizzaria.models.valores.ValorDAO;
+import pizzaria.models.valores.ValorObserver;
 
 /**
  *
  * @author chris
  */
-public class MainView extends javax.swing.JFrame implements ClienteObserver {
+public class MainView extends javax.swing.JFrame implements ClienteObserver, ValorObserver {
 
     private DefaultTableModel model;
     private final ClienteDao clienteDao;
     private final ClienteController clienteController;
+    private final ValorController valorController;
+    private final ValorDAO valorDAO;
 
     /**
      * Creates new form Main
      */
-    public MainView(ClienteDao clienteDao, ClienteController clienteController) {
+    public MainView(ClienteDao clienteDao, ClienteController clienteController, ValorController valorController,
+            ValorDAO valorDAO) {
         this.clienteController = clienteController;
+        this.valorController = valorController;
+        this.valorDAO = valorDAO;
         this.setVisible(true);
         this.clienteDao = clienteDao;
         this.clienteDao.subscribe(this);
         this.clienteController.initController(this, clienteDao);
+        this.valorController.initValorController(this.valorDAO);
         this.model = new DefaultTableModel();
         this.initTableModel();
         initComponents();
@@ -524,13 +534,18 @@ public class MainView extends javax.swing.JFrame implements ClienteObserver {
      // hehe2
 
     private void btExcluirClienteActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btExcluirClienteActionPerformed
-        Integer id = Integer.parseInt(tabela.getValueAt(tabela.getSelectedRow(), 0).toString());
-        this.clienteController.removerCliente(id);
+        Integer id;// = Integer.parseInt(tabela.getValueAt(tabela.getSelectedRow(), 0).toString());
+        List<Integer> ids = new ArrayList<>();
+        int[] rows = tabela.getSelectedRows();
+        for (Integer row : rows) {
+            id = Integer.parseInt(tabela.getValueAt(row, 0).toString());
+            ids.add(id);
+        }
+        this.clienteController.removerClientes(ids);
     }// GEN-LAST:event_btExcluirClienteActionPerformed
 
     private void AddPedidoActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_AddPedidoActionPerformed
-        PedidoFormView telaPedido = new PedidoFormView();
-        telaPedido.setVisible(true);
+        this.clienteController.addPedido(tabela);
     }// GEN-LAST:event_AddPedidoActionPerformed
 
     private void ListarItensActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ListarItensActionPerformed
@@ -580,6 +595,11 @@ public class MainView extends javax.swing.JFrame implements ClienteObserver {
     }// GEN-LAST:event_rbPremiumActionPerformed
 
     private void SalvarValoresActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_SalvarValoresActionPerformed
+        Double valorSimples = Double.parseDouble(tfSimples.getText());
+        Double valorEspecial = Double.parseDouble(tfEspecial.getText());
+        Double valorPremium = Double.parseDouble(tfPremium.getText());
+        List<Double> valores = List.of(valorSimples, valorEspecial, valorPremium);
+        this.valorController.atualizarValores(valores);
 
     }// GEN-LAST:event_SalvarValoresActionPerformed
 
@@ -699,5 +719,12 @@ public class MainView extends javax.swing.JFrame implements ClienteObserver {
         DefaultTableModel model = (DefaultTableModel) tabela.getModel();
         model.addRow(
                 new Object[] { c.getId(), c.getNome(), c.getSobrenome(), c.getTelefone(), c.getEndereco() });
+    }
+
+    @Override
+    public void updateValores(List<Valor> valores) {
+        this.tfEspecial.setText(valores.get(2).getPreco().toString());
+        this.tfPremium.setText(valores.get(3).getPreco().toString());
+        this.tfSimples.setText(valores.get(1).getPreco().toString());
     }
 }
