@@ -4,7 +4,29 @@
  */
 package pizzaria.models.pedido.view;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import pizzaria.models.pizza.FormaPizza;
+import pizzaria.models.pizza.PizzaQuadrada;
+import pizzaria.models.pizza.PizzaRedonda;
+import pizzaria.models.pizza.PizzaTriangular;
 import pizzaria.models.cliente.Cliente;
+import pizzaria.models.pedido.PedidoController;
+import pizzaria.models.pedidoItem.PedidoItem;
+import pizzaria.models.pedidoItem.PedidoItemDao;
+import pizzaria.models.pedidoItem.PedidoItemDaoImpl;
+import pizzaria.models.pizza.FormaPizza;
+import pizzaria.models.sabor.Sabor;
+import pizzaria.models.sabor.SaborController;
+import pizzaria.models.sabor.SaborDao;
+import pizzaria.models.sabor.SaborDaoImpl;
 import pizzaria.models.valores.ValorController;
 import pizzaria.models.valores.ValorDAO;
 
@@ -17,14 +39,18 @@ public class PedidoFormView extends javax.swing.JFrame {
     private final Cliente cliente;
     private final ValorController valorController;
     private final ValorDAO valorDAO;
+    private final SaborController saborController;
+    private final PedidoController pedidoController;
 
     /**
      * Creates new form PedidoForm
      */
-    public PedidoFormView(Cliente cliente,ValorController valorController,ValorDAO valorDAO) {
+    public PedidoFormView(Cliente cliente,ValorController valorController,ValorDAO valorDAO,SaborController saborController,PedidoController pedidoController) {
         this.cliente = cliente;
         this.valorController = valorController;
         this.valorDAO= valorDAO;
+        this.saborController = saborController;
+        this.pedidoController = pedidoController;
         initComponents();
         initComboBox();
     }
@@ -38,7 +64,14 @@ public class PedidoFormView extends javax.swing.JFrame {
     // Code">//GEN-BEGIN:initComponents
     
     private void initComboBox(){
-        
+       List<Sabor> sabores =  this.saborController.buscarSabores();
+       System.out.println(sabores);
+        for(Sabor sabor : sabores){
+        System.out.println(sabor.getNome());
+        this.sabor1Cb.addItem(sabor.getNome());
+        this.sabor2Cb.addItem(sabor.getNome());
+    }
+      
     }
     
     private void initComponents() {
@@ -303,9 +336,146 @@ public class PedidoFormView extends javax.swing.JFrame {
     }// GEN-LAST:event_triangulotpActionPerformed
 
     private void AdicionarPedidoActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_AdicionarPedidoActionPerformed
-
+            
+        this.pedidoController.adicionarPedido(ALLBITS, null, null, ABORT, ABORT);
     }// GEN-LAST:event_AdicionarPedidoActionPerformed
 
+
+    
+     private void Base(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AdicionarPedidoActionPerformed
+        if(dimensaotf.getText().isEmpty() && quantidadetf.getText().isEmpty()){
+                msgGenerica.setVisible(true);
+                return;
+        }else{
+                msgGenerica.setVisible(false);
+            }
+            /* 
+            FormaPizza forma = null;
+            int formaId = 0;
+            if(!dimensaotf.getText().isEmpty()){
+                int dimensao = Integer.parseInt(dimensaotf.getText());
+                if(circulotp.isSelected()){
+                    if(dimensao < 7 || dimensao > 23){
+                        lbErroDimensao.setText("A dimensão não pode ser MENOR que 7 cm e MAIOR que 23 cm.");
+                        lbErroDimensao.setVisible(true);
+                        return;
+                    }else{
+                        lbErroDimensao.setVisible(false);
+                    }
+                    forma = new PizzaRedonda();
+                    formaId = 1;
+                }else if(quadradotp.isSelected()){
+                    if(dimensao < 10 || dimensao > 40){
+                        lbErroDimensao.setText("A dimensão não pode ser MENOR que 10 cm e MAIOR que 40 cm.");
+                        lbErroDimensao.setVisible(true);
+                        return;
+                    }else{
+                        lbErroDimensao.setVisible(false);
+                    }
+                    forma = new PizzaQuadrada();
+                    formaId = 2;
+                }else if(triangulotp.isSelected()){
+                    if(dimensao < 20 || dimensao > 60){
+                        lbErroDimensao.setText("A dimensão não pode ser MENOR que 20 cm e MAIOR que 60 cm.");
+                        lbErroDimensao.setVisible(true);
+                        return;
+                    }else{
+                        lbErroDimensao.setVisible(false);
+                    }
+
+                    forma = new PizzaTriangular();
+                    formaId = 3;
+                }
+                
+                
+                NumberFormat dinheiroBR = NumberFormat.getCurrencyInstance(localeBR);
+                Double currentTotal = itemPedido.getValor();
+                ValorTotal.setText(dinheiroBR.format(currentTotal));
+                ValorTotal.setVisible(true);
+            }else{
+                int quantidade = Integer.parseInt(quantidadetf.getText());
+                if(circulotp.isSelected()){
+                    forma = new PizzaRedonda();
+                    formaId = 1;
+                }else if(quadradotp.isSelected()){
+                    forma = new PizzaQuadrada();
+                    formaId = 2;
+                }else if(triangulotp.isSelected()){
+                    forma = new PizzaTriangular();
+                    formaId = 3;
+                }
+
+                if(quantidade < 100 || quantidade > 1600){
+                    lbErroQuantidade.setText("A quantidade não pode ser MENOR que 100 cm² e MAIOR que 1600 cm².");
+                    lbErroQuantidade.setVisible(true);
+                    return;
+                }else{
+                    lbErroQuantidade.setVisible(false);
+                }
+*/
+/*
+
+                PedidoItem itemPedido = new PedidoItem();
+                forma.setArea(Double.parseDouble(quantidadetf.getText()));
+                itemPedido.setMedida(forma.getMedida());
+                itemPedido.setArea(forma.getArea());
+                itemPedido.setForma(forma);
+                itemPedido.setSabor1(getSaborBySelected(sabor1Cb.getSelectedIndex()));
+                itemPedido.setSabor2(getSaborBySelected(sabor2Cb.getSelectedIndex()));
+                itemPedido.setValor(calculaValorItemPedido(itemPedido));
+                itemPedido.setIdPedido(idPedido);
+                itemPedido.setFormaId(formaId);
+
+                con = ConnectionFactory.getConnection("jdbc:mysql://localhost:3306/db_pizza", "root", "password", ConnectionFactory.MYSQL);
+                PedidoItemDao pdIDao = new PedidoItemDaoImpl(con);
+                if (id_item_pedido != 0){
+                    itemPedido.setId(id_item_pedido);
+                    pdIDao.AtualizarPedidoItem(itemPedido);
+                }else{
+                    pdIDao.InserirPedidoItem(itemPedido);
+                }
+
+                //telaPrincipal.imprimeTodos();
+
+                int IntMedida = (int) Math.round(forma.getMedida());
+                dimensaotf.setText(String.valueOf(IntMedida));
+                Locale localeBR = new Locale( "pt", "BR" );
+                NumberFormat dinheiroBR = NumberFormat.getCurrencyInstance(localeBR);
+                Double currentTotal = itemPedido.getValor();
+                ValorTotal.setText(dinheiroBR.format(currentTotal));
+                ValorTotal.setVisible(true);
+            } */
+            
+            //inserção do pedido
+        
+
+           // PedidoDaoImpl pDaoImp = new PedidoDaoImpl(con);
+          //  int idPedido = pDaoImp.GetIdPedidoByIdCliente(this.id_cliente);
+            //int formaId = 1;
+          /* 
+            telaPrincipal.imprimeTodosPedidos();
+            imprimeTodosPedidosItens(id_cliente);
+            con.close();
+        }catch (NumberFormatException e) {
+            if(!pattern.matcher(dimensaotf.getText()).matches() && !dimensaotf.getText().isEmpty()){
+                lbErroDimensao.setText("Por favor, o campo deve ser um inteiro.");
+                lbErroDimensao.setVisible(true);
+            }
+
+            if(!pattern.matcher(quantidadetf.getText()).matches() && !quantidadetf.getText().isEmpty()){
+                lbErroQuantidade.setText("Por favor, o campo deve ser um inteiro.");
+                lbErroQuantidade.setVisible(true);
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ClienteForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(ClienteForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(PizzaForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_AdicionarPedidoActionPerformed
+*/
+}
     private void fecharBtnActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_fecharBtnActionPerformed
         this.setVisible(false);
     }// GEN-LAST:event_fecharBtnActionPerformed

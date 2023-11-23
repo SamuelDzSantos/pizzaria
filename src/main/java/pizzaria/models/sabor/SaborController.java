@@ -29,6 +29,10 @@ public class SaborController {
         }
     }
 
+    public List<Sabor> buscarSabores(){
+        return this.saborDao.buscarTodos();
+    }
+
     public void removerSabor(List<Integer> ids){  
         this.saborDao.removerSabores(ids);
     }

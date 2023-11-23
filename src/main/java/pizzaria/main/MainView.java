@@ -18,6 +18,7 @@ import pizzaria.models.cliente.ClienteController;
 import pizzaria.models.cliente.ClienteDao;
 import pizzaria.models.cliente.ClienteObserver;
 import pizzaria.models.cliente.view.ClienteFormView;
+import pizzaria.models.pedido.PedidoController;
 import pizzaria.models.sabor.Sabor;
 import pizzaria.models.sabor.SaborController;
 import pizzaria.models.sabor.SaborDao;
@@ -40,23 +41,26 @@ public class MainView extends javax.swing.JFrame implements ClienteObserver, Val
     private final ValorDAO valorDAO;
     private final SaborDao saborDao;
     private final SaborController saborController;
+    private final PedidoController pedidoController;
 
     /**
      * Creates new form Main
      */
     public MainView(ClienteDao clienteDao, ClienteController clienteController, ValorController valorController,
-            ValorDAO valorDAO,SaborController saborController,SaborDao saborDao) {
+            ValorDAO valorDAO,SaborController saborController,SaborDao saborDao,PedidoController pedidoController) {
         this.clienteController = clienteController;
         this.valorController = valorController;
         this.saborController = saborController;
         this.valorDAO = valorDAO;
         this.saborDao = saborDao;
         this.clienteDao = clienteDao;
+        this.pedidoController = pedidoController;
         this.setVisible(true);
         
-        this.clienteController.initController(this, clienteDao,this.valorController,this.valorDAO);
+        this.clienteController.initController(this, clienteDao,this.valorController,this.valorDAO,this.saborController,this.pedidoController);
         this.valorController.initValorController(this.valorDAO);
         this.saborController.initController(this.saborDao);
+        this.pedidoController.initController(saborDao, valorDAO, null, null);
         this.model = new DefaultTableModel();
         this.initTableModel();
         initComponents();
